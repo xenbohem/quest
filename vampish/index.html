@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Nocturnal Quest — Vampire Type Certificate</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg1:#0b0010;
+    --bg2:#1a002b;
+    --accent1:#8a2be2; /* blueviolet */
+    --accent2:#550066; /* deep purple */
+    --neon:#c97bff;
+    --muted:#9b87a7;
+    --card:#130018;
+    --glass: rgba(255,255,255,0.03);
+  }
+  html,body{height:100%;margin:0;font-family: 'VT323', monospace;background: radial-gradient(1200px 600px at 10% 10%, rgba(138,43,226,0.12), transparent), linear-gradient(180deg,var(--bg1),var(--bg2)); color:#e9def8;}
+  .page{
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+    box-sizing:border-box;
+  }
+  .wrap{
+    width:100%;
+    max-width:1100px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border:1px solid rgba(255,255,255,0.04);
+    padding:28px;
+    border-radius:12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 60px rgba(138,43,226,0.06) inset;
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:20px;
+  }
+
+  /* Left column: avatar + chat */
+  .left{
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    border-radius:10px;
+    padding:18px;
+    border:1px solid rgba(255,255,255,0.02);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:420px;
+  }
+  .dos{
+    font-size:14px;
+    color:var(--muted);
+    background:rgba(0,0,0,0.25);
+    padding:10px;
+    border-radius:6px;
+    height:120px;
+    overflow:auto;
+    line-height:1.35;
+    box-shadow: inset 0 0 20px rgba(100,0,150,0.03);
+  }
+
+  .avatar-row{
+    display:flex;align-items:center;gap:12px;
+  }
+  .avatar{
+    width:80px;height:80px;border-radius:50%;
+    background:linear-gradient(180deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(138,43,226,0.25), inset 0 -6px 18px rgba(255,255,255,0.05);
+    border:2px solid rgba(255,255,255,0.06);
+  }
+  .avatar svg{filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));}
+  .greet{
+    font-size:20px;color:#fff;
+  }
+  .greet .muted{display:block;font-size:12px;color:var(--muted);font-family: 'VT323', monospace;}
+
+  .chat{
+    margin-top:6px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    overflow:auto;
+    padding-right:6px;
+  }
+  .bubble{
+    max-width:84%;
+    padding:10px 14px;border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+    color:#eae2ff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  }
+  .bubble.me{align-self:flex-end;background:linear-gradient(180deg, rgba(137,43,226,0.18), rgba(85,0,102,0.12));color:#fff;}
+  .bubble.bot{align-self:flex-start;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005)); color:var(--muted); font-family: 'VT323', monospace; font-size:15px;}
+  .choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .btn{
+    padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);
+    color:#fff;cursor:pointer;font-family:inherit;
+    transition:transform .08s ease, box-shadow .12s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(138,43,226,0.12);}
+  .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.06);color:var(--muted)}
+  .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none;box-shadow:0 8px 30px rgba(138,43,226,0.18)}
+
+  /* Right column: progress and result */
+  .right{
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+    padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);
+  }
+  .title{
+    font-family:'Cinzel', serif;
+    color:var(--neon);
+    font-size:20px;
+    text-shadow: 0 3px 12px rgba(201,123,255,0.18);
+  }
+  .progress{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .type-pill{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);font-size:13px}
+  .result{
+    margin-top:8px;padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(85,0,102,0.05), rgba(0,0,0,0.03));min-height:160px;
+  }
+  .cert-preview{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px;}
+  .cert-thumb{width:240px;height:135px;border-radius:8px;background:linear-gradient(90deg,#2a0830,#5e0a60);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.04)}
+  .muted{color:var(--muted);font-size:13px}
+  .small{font-size:13px;color:var(--muted)}
+
+  /* Controls bottom */
+  .controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
+  .mail{
+    width:46px;height:46px;border-radius:10px;background:linear-gradient(180deg,var(--accent2),var(--accent1));display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;border:1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 30px rgba(138,43,226,0.18);
+  }
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* Footer area for saved certs list */
+  .saved{
+    margin-top:10px;padding:12px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    font-size:13px;color:var(--muted);
+  }
+
+  /* smaller screens */
+  @media (max-width:980px){
+    .wrap{grid-template-columns:1fr; padding:18px;}
+    .avatar{width:64px;height:64px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="wrap" role="application" aria-label="Nocturnal Quest app">
+    <div class="left" id="leftColumn">
+      <div class="avatar-row">
+        <div class="avatar" aria-hidden="true">
+          <!-- little vampire glyph -->
+          <svg viewBox="0 0 64 64" width="46" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.18"/><stop offset="1" stop-color="#000" stop-opacity="0.08"/></linearGradient></defs>
+            <rect x="6" y="8" width="52" height="48" rx="10" fill="url(#g)"/>
+            <path d="M32 6c-4 0-6 4-6 4s-1.25 6.5-1.25 9.5C24.75 24 29 28 29 28h10s4.25-4 4.25-8.5C43.25 16.5 42 10 42 10s-2-4-6-4c-2.5 0-3.5 1.5-4 2.5C35.5 7.5 34 6 32 6z" fill="#1b001a"/>
+            <circle cx="24.5" cy="30.5" r="3" fill="#fff" opacity=".9"/>
+            <circle cx="39.5" cy="30.5" r="3" fill="#fff" opacity=".9"/>
+            <path d="M28 40c2 4 6 4 8 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="greet" id="greetTitle">Nocturne AI</div>
+          <div class="muted">Your virtual archivist of the night</div>
+        </div>
+      </div>
+
+      <div class="dos" id="dosArea" aria-live="polite"></div>
+
+      <div class="chat" id="chat">
+        <!-- chat bubbles appended here -->
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <input id="nameInput" placeholder="What should we call you?" aria-label="Enter your name" style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#fff;font-family:inherit">
+        <button class="btn primary" id="startBtn">Start</button>
+      </div>
+      <div class="hint">Your name is stored locally in your browser only.</div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div class="title">Nocturnal Quest</div>
+        <div class="small">An interactive personality quest — 7 questions to determine your Vampire Type.</div>
+        <div class="progress" id="progressPills" aria-hidden="true" style="margin-top:12px">
+          <div class="type-pill">Aristocrat</div>
+          <div class="type-pill">Nosferatu</div>
+          <div class="type-pill">Night Hunter</div>
+          <div class="type-pill">Bloodseer</div>
+          <div class="type-pill">Ancient</div>
+        </div>
+
+        <div class="result card" id="resultCard" style="margin-top:12px">
+          <div id="resultIntro" style="font-weight:700;color:var(--neon);font-family:'Cinzel',serif">Awaiting your initiation...</div>
+          <div id="resultBody" class="small" style="margin-top:8px">Begin by telling Nocturne your name on the left and clicking Start.</div>
+
+          <div class="cert-preview" id="certPreviewArea" style="display:none">
+            <div class="cert-thumb" id="certThumb">Preview</div>
+            <div style="flex:1;margin-left:8px">
+              <div id="certMeta" class="muted">No certificate yet.</div>
+              <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+                <button class="btn" id="downloadBtn">Download PNG</button>
+                <button class="btn" id="saveDiskBtn">Save to disk...</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-family:'Cinzel',serif;color:var(--neon);font-size:16px">Local Archive</div>
+            <div class="muted" style="margin-top:4px">Certificates saved in your browser (localStorage)</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="mail" id="mailBtn" title="Email admin for help" role="button" aria-label="Email admin for help">
+              <!-- mail icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 7.5c0-.828.672-1.5 1.5-1.5h15c.828 0 1.5.672 1.5 1.5V16.5c0 .828-.672 1.5-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V7.5z" stroke="#fff" stroke-opacity=".9" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 7.5l-9 6-9-6" stroke="#fff" stroke-opacity=".9" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <button class="btn ghost" id="clearSavedBtn" title="Clear saved archive">Clear Archive</button>
+          </div>
+        </div>
+
+        <div class="saved" id="savedList" style="margin-top:12px;min-height:80px;">
+          No certificates saved yet.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Hidden canvas for certificate generation -->
+<canvas id="certCanvas" width="1200" height="675" style="display:none"></canvas>
+
+<script>
+/*
+  Simple client-side Nocturnal Quest app
+  - Edit adminEmail below to the administrator address you want mailto: to point to.
+  - All state is local (localStorage). No backend needed.
+*/
+const adminEmail = "admin@example.com"; // <-- REPLACE with real address before deploying
+
+// UI elements
+const dosArea = document.getElementById('dosArea');
+const chat = document.getElementById('chat');
+const startBtn = document.getElementById('startBtn');
+const nameInput = document.getElementById('nameInput');
+const resultIntro = document.getElementById('resultIntro');
+const resultBody = document.getElementById('resultBody');
+const certPreviewArea = document.getElementById('certPreviewArea');
+const certThumb = document.getElementById('certThumb');
+const certMeta = document.getElementById('certMeta');
+const downloadBtn = document.getElementById('downloadBtn');
+const saveDiskBtn = document.getElementById('saveDiskBtn');
+const mailBtn = document.getElementById('mailBtn');
+const savedList = document.getElementById('savedList');
+const clearSavedBtn = document.getElementById('clearSavedBtn');
+
+const canvas = document.getElementById('certCanvas');
+const ctx = canvas.getContext('2d');
+
+// Questions and scoring mapping
+const QUESTIONS = [
+  { q: "You step into the moonlit courtyard. What draws your attention first?", a:[
+    {t:'Aristocrat', text:'A grand chandelier and marble statues.'},
+    {t:'Nosferatu', text:'A shadowed drain leading to the sewers.'},
+    {t:'NightHunter', text:'A rusted crossbow hidden behind ivy.'},
+  ]},
+  { q: "What do you sip from the chalice?", a:[
+    {t:'Bloodseer', text:'A mysterious crimson liquid that whispers.'},
+    {t:'Aristocrat', text:'A rare wine, aged and refined.'},
+    {t:'Nosferatu', text:'Cold iron water, bitter but necessary.'},
+  ]},
+  { q: "Your power is strongest when:", a:[
+    {t:'Ancient', text:'You stand atop a ruined altar and remember old names.'},
+    {t:'NightHunter', text:'You hunt beneath rainy rooftops.'},
+    {t:'Bloodseer', text:'You peer into reflections and dream of futures.'},
+  ]},
+  { q: "A rival approaches. You:", a:[
+    {t:'Aristocrat', text:'Invite them politely to a duel of wits.'},
+    {t:'Nosferatu', text:'Lurk and strike when they are alone.'},
+    {t:'NightHunter', text:'Traps and precision — you never miss.'},
+  ]},
+  { q: "Your emblem would most likely be:", a:[
+    {t:'Bloodseer', text:'An eye within a crescent moon.'},
+    {t:'Ancient', text:'A ringed star, weathered by time.'},
+    {t:'Aristocrat', text:'A fleur-de-lune embroidered in silver.'},
+  ]},
+  { q: "Choose a companion:", a:[
+    {t:'Nosferatu', text:'A roguish alley fox with daring.'},
+    {t:'Bloodseer', text:'A raven that carries secrets.'},
+    {t:'Ancient', text:'A slow tortoise, ancient as stone.'},
+  ]},
+  { q: "Your philosophy:", a:[
+    {t:'NightHunter', text:'Purpose is honed by the hunt.'},
+    {t:'Aristocrat', text:'Beauty and influence shape the night.'},
+    {t:'Bloodseer', text:'Knowledge leaks between the folds of dreams.'},
+  ]},
+];
+
+const TYPES = {
+  'Aristocrat': { title:'The Aristocrat', desc:'A charismatic vampire of salons and shadows — elegant, persuasive, and dangerously cultured.'},
+  'Nosferatu': { title:'The Nosferatu', desc:'A creature of cobbles and sewers — stealthy, primal, and unafraid of darkness.'},
+  'NightHunter': { title:'The Night Hunter', desc:'A lethal predator who stalks by moonlight with surgical precision.'},
+  'Bloodseer': { title:'The Bloodseer', desc:'A mystic of crimson visions — communes with omens and portends.'},
+  'Ancient': { title:'The Ancient', desc:'Slow, knowing and immovable — a repository of long memory and old magics.'},
+};
+
+// App State
+let state = {
+  name: null,
+  qIndex: -1,
+  scores: {},
+  answers: [],
+  lastCert: null
+};
+
+// startup: DOS boot text effect
+const START_LINES = [
+  "INIT.Nocturne v1.0.6",
+  "Loading nocturnal modules... [OK]",
+  "Establishing moonlink... [OK]",
+  "Decrypting velvet keys... [OK]",
+  "Nocturne AI standing by.",
+  "Please identify yourself to proceed."
+];
+
+function dosBoot(){
+  dosArea.textContent = '';
+  let i = 0;
+  function nextLine(){
+    if(i>=START_LINES.length) return;
+    const line = START_LINES[i++];
+    const p = document.createElement('div');
+    p.textContent = line;
+    dosArea.appendChild(p);
+    dosArea.scrollTop = dosArea.scrollHeight;
+    setTimeout(nextLine, 400 + Math.random()*500);
+  }
+  nextLine();
+}
+
+// Chat helpers
+function addBubble(text, who='bot'){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (who==='me'?'me':'bot');
+  b.textContent = text;
+  chat.appendChild(b);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Initialize
+function loadState(){
+  try{
+    const raw = localStorage.getItem('nocturne_state_v1');
+    if(raw){
+      const s = JSON.parse(raw);
+      state = Object.assign(state, s);
+      if(state.name) {
+        nameInput.value = state.name;
+        resultIntro.textContent = 'Welcome back, ' + state.name;
+        resultBody.textContent = 'You can resume your quest or generate certificates from the saved archive.';
+      }
+    }
+  }catch(e){}
+  renderSavedList();
+}
+
+function saveState(){
+  localStorage.setItem('nocturne_state_v1', JSON.stringify(state));
+  renderSavedList();
+}
+
+function renderSavedList(){
+  const saved = JSON.parse(localStorage.getItem('nocturne_certificates_v1') || '[]');
+  if(!saved.length){
+    savedList.textContent = 'No certificates saved yet.';
+    return;
+  }
+  savedList.innerHTML = '';
+  saved.forEach((c, idx)=>{
+    const row = document.createElement('div');
+    row.style.display='flex';row.style.justifyContent='space-between';row.style.alignItems='center';row.style.gap='12px';row.style.marginBottom='6px';
+    const meta = document.createElement('div');
+    meta.innerHTML = `<strong style="color:#fff">${escapeHtml(c.name)}</strong> — <span style="color:var(--muted)">${escapeHtml(c.type)}</span><div class="small" style="color:var(--muted)">${new Date(c.date).toLocaleString()}</div>`;
+    const right = document.createElement('div');
+    const d = document.createElement('button'); d.className='btn'; d.textContent='Download PNG';
+    d.onclick = ()=>downloadDataUrl(c.png, `certificate-${c.name.replace(/\s+/g,'_')}-${c.type}.png`);
+    right.appendChild(d);
+    row.appendChild(meta);
+    row.appendChild(right);
+    savedList.appendChild(row);
+  });
+}
+
+// Utility: escape naive HTML
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>'&#'+m.charCodeAt(0)+';'); }
+
+// Start flow
+startBtn.addEventListener('click', () => {
+  const name = (nameInput.value || '').trim();
+  if(!name){ nameInput.focus(); return; }
+  state.name = name;
+  state.qIndex = -1;
+  state.scores = {};
+  state.answers = [];
+  saveState();
+  chat.innerHTML = '';
+  addBubble(`Welcome ${name}. I am Nocturne. Do you desire a quest to reveal your Vampire Type?`);
+  setTimeout(()=>askYesNo(), 450);
+  resultIntro.textContent = `Welcome, ${name}`;
+  resultBody.textContent = `Nocturne awaits your consent to begin the 7-question trial.`;
+});
+
+// yes/no prompt
+function askYesNo(){
+  const c = document.createElement('div');
+  c.className='choices';
+  const yes = document.createElement('button'); yes.className='btn primary'; yes.textContent='Yes';
+  const no = document.createElement('button'); no.className='btn ghost'; no.textContent='No';
+  yes.onclick = ()=>{ addBubble('Yes', 'me'); c.remove(); startQuestions(); };
+  no.onclick = ()=>{ addBubble('No', 'me'); c.remove(); addBubble('Very well. Return when moonlight calls.'); };
+  c.appendChild(yes); c.appendChild(no);
+  chat.appendChild(c);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Questions flow
+function startQuestions(){
+  state.qIndex = 0;
+  saveState();
+  presentQuestion();
+}
+
+function presentQuestion(){
+  chat.innerHTML = ''; // keep chat minimal per question for clarity
+  const question = QUESTIONS[state.qIndex];
+  addBubble(`Question ${state.qIndex+1} of ${QUESTIONS.length}: ${question.q}`);
+  const c = document.createElement('div'); c.className='choices';
+  question.a.forEach(opt=>{
+    const btn = document.createElement('button'); btn.className='btn'; btn.textContent = opt.text;
+    btn.onclick = ()=>{
+      addBubble(opt.text,'me');
+      recordAnswer(opt.t, opt.text);
+      c.remove();
+      // small delay then next
+      setTimeout(()=> {
+        state.qIndex++;
+        if(state.qIndex < QUESTIONS.length) presentQuestion();
+        else finishQuest();
+      }, 500);
+    };
+    c.appendChild(btn);
+  });
+  chat.appendChild(c);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function recordAnswer(type, text){
+  state.answers.push({q: state.qIndex+1, type, text});
+  state.scores[type] = (state.scores[type] || 0) + 1;
+  saveState();
+}
+
+// Determine top type
+function determineType(){
+  const keys = Object.keys(TYPES);
+  let best = null, bestScore = -1;
+  keys.forEach(k=>{
+    const s = state.scores[k] || 0;
+    if(s > bestScore){ best = k; bestScore = s; }
+  });
+  // if multiple tied, combine them
+  const topScore = bestScore;
+  const tied = keys.filter(k => (state.scores[k] || 0) === topScore);
+  if(tied.length === 1) return tied[0];
+  // simple tie-handling: join names
+  return tied.join(' + ');
+}
+
+// Finish
+function finishQuest(){
+  const finalType = determineType();
+  const info = TYPES[finalType] || { title: finalType, desc: 'A unique synthesis of nocturnal traits.'};
+  resultIntro.textContent = info.title;
+  resultBody.textContent = info.desc;
+  // Show certificate UI
+  certPreviewArea.style.display = 'flex';
+  certMeta.textContent = `${state.name} — ${info.title}`;
+  // generate preview image
+  const png = generateCertificatePNG(state.name, info.title, info.desc);
+  certThumb.style.backgroundImage = `url(${png})`;
+  certThumb.style.backgroundSize='cover';
+  certThumb.textContent='';
+  // save metadata to lastCert (but do not auto-download)
+  const certObj = { name: state.name, type: info.title, desc: info.desc, date: new Date().toISOString(), png };
+  state.lastCert = certObj;
+  saveToArchive(certObj); // store metadata + png in localStorage (simulating "saved locally")
+  saveState();
+  renderSavedList();
+  addBubble(`The trial concludes. You are: ${info.title}`);
+}
+
+// Certificate generation (draw onto canvas and return dataURL)
+function generateCertificatePNG(name, typeTitle, typeDesc){
+  // draw canvas
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // background
+  const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  g.addColorStop(0,'#120014'); g.addColorStop(1,'#3b0638');
+  ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // decorative border
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 6;
+  roundRect(ctx, 30,30,canvas.width-60,canvas.height-60,24);
+  ctx.stroke();
+
+  // title
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = '48px Cinzel, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Certificate of Nocturnal Essence', canvas.width/2, 140);
+
+  // subtitle
+  ctx.fillStyle = 'rgba(201,123,255,0.92)';
+  ctx.font = '40px Cinzel, serif';
+  ctx.fillText(typeTitle, canvas.width/2, 200);
+
+  // name
+  ctx.font = '62px VT323, monospace';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(name, canvas.width/2, 310);
+
+  // body
+  ctx.font = '20px VT323, monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  wrapText(ctx, `This certifies that ${name} has completed the Nocturnal Quest and demonstrated traits aligning with "${typeTitle}". ${typeDesc}`, canvas.width/2, 360, canvas.width - 260, 28);
+
+  // date & serial
+  const now = new Date();
+  ctx.font = '18px VT323, monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillText(`Issued: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`, canvas.width/2, 520);
+  const serial = 'NV-' + Math.random().toString(36).slice(2,10).toUpperCase();
+  ctx.fillText(`Serial: ${serial}`, canvas.width/2, 550);
+
+  // subtle sig flourish
+  ctx.strokeStyle = 'rgba(201,123,255,0.24)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(200,600); ctx.bezierCurveTo(420,560,780,640,1000,600); ctx.stroke();
+
+  // return dataURL
+  return canvas.toDataURL('image/png');
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+// text wrapping helper
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '';
+  for(let n=0;n<words.length;n++){
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    if(metrics.width > maxWidth && n>0){
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, y);
+  return y;
+}
+
+// Save to archive in localStorage
+function saveToArchive(certObj){
+  const arr = JSON.parse(localStorage.getItem('nocturne_certificates_v1') || '[]');
+  // keep only last 10
+  arr.unshift(certObj);
+  if(arr.length>10) arr.pop();
+  localStorage.setItem('nocturne_certificates_v1', JSON.stringify(arr));
+  renderSavedList();
+}
+
+// Download button
+downloadBtn.addEventListener('click', ()=>{
+  if(state.lastCert && state.lastCert.png){
+    const fname = `certificate-${(state.name||'no_name').replace(/\s+/g,'_')}-${(state.lastCert.type||'vampire').replace(/\s+/g,'_')}.png`;
+    downloadDataUrl(state.lastCert.png, fname);
+  }
+});
+
+// utility to trigger download
+function downloadDataUrl(dataUrl, filename){
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Save to disk (File System Access API if available)
+saveDiskBtn.addEventListener('click', async ()=>{
+  if(!state.lastCert || !state.lastCert.png){ alert('No certificate to save.'); return; }
+  // modern API
+  if(window.showSaveFilePicker){
+    try{
+      const opts = { suggestedName: `certificate-${state.name.replace(/\s+/g,'_')}.png`, types:[{description:'PNG Image', accept:{'image/png':['.png']}}] };
+      const handle = await window.showSaveFilePicker(opts);
+      const writable = await handle.createWritable();
+      // convert dataURL to blob
+      const blob = dataURLtoBlob(state.lastCert.png);
+      await writable.write(blob);
+      await writable.close();
+      alert('Saved to disk via browser file picker.');
+    }catch(e){ console.warn(e); alert('Save cancelled or not permitted.'); }
+  }else{
+    // fallback: download
+    downloadDataUrl(state.lastCert.png, `certificate-${state.name.replace(/\s+/g,'_')}.png`);
+  }
+});
+
+// convert dataURL to blob
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--) u8arr[n] = bstr.charCodeAt(n);
+  return new Blob([u8arr], {type:mime});
+}
+
+// Mail button: open mailto with prefilled subject & body
+mailBtn.addEventListener('click', ()=>{
+  const name = state.name || 'Unknown';
+  const result = (state.lastCert && state.lastCert.type) ? state.lastCert.type : 'No result';
+  const subject = encodeURIComponent(`Help: Nocturnal Quest — ${name}`);
+  const body = encodeURIComponent(`Hello admin,
+
+I need help with the Nocturnal Quest.
+
+Name: ${name}
+Result: ${result}
+Date: ${new Date().toLocaleString()}
+
+Please advise. (I can attach my certificate PNG manually if needed.)
+
+Thanks,
+${name}`);
+  const href = `mailto:${adminEmail}?subject=${subject}&body=${body}`;
+  window.location.href = href;
+});
+
+// Clear saved archive
+clearSavedBtn.addEventListener('click', ()=>{
+  if(confirm('Clear local certificate archive? This only removes items stored locally in your browser.')) {
+    localStorage.removeItem('nocturne_certificates_v1');
+    renderSavedList();
+  }
+});
+
+// small helpers
+function initScores(){
+  Object.keys(TYPES).forEach(k => state.scores[k] = 0);
+}
+
+function startUI(){
+  dosBoot();
+  loadState();
+  initScores();
+  // small welcoming bubble if name exists
+  if(state.name){
+    addBubble(`Welcome back, ${state.name}. Resume your nocturnal pursuits.`)
+  } else {
+    addBubble('Greetings. Enter your name to begin the quest.');
+  }
+}
+
+// small helper to show saved cert preview when page loads (if any)
+(function autoPreview(){
+  const saved = JSON.parse(localStorage.getItem('nocturne_certificates_v1') || '[]');
+  if(saved && saved.length){
+    const latest = saved[0];
+    certPreviewArea.style.display = 'flex';
+    certThumb.style.backgroundImage = `url(${latest.png})`;
+    certThumb.style.backgroundSize='cover';
+    certThumb.textContent='';
+    certMeta.textContent = `${latest.name} — ${latest.type}`;
+  }
+})();
+
+startUI();
+
+</script>
+
+</body>
+</html>
