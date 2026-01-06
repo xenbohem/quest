@@ -321,8 +321,10 @@ function openAppAfterLogin(sess){
   renderSavedList();
   dosArea.scrollTop = dosArea.scrollHeight;
 }
+const playerNameDisplay = document.getElementById('playerNameDisplay');
+if (playerNameDisplay) playerNameDisplay.textContent = state.name || 'Unknown';
 
-// respond handler
+  // respond handler
 function onRespond(){
   const name = (userNameField.value||'').trim();
   if(!name){ userNameField.focus(); return; }
