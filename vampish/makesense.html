@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Nocturnal Quest — Vampire Type Certificate</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cinzel:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg1:#06000a;
+    --bg2:#1a002b;
+    --accent1:#8a2be2;
+    --accent2:#550066;
+    --cornflower:#6495ED;
+    --neon:#c97bff;
+    --muted:#cfc1e6;
+    --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.04);
+    --base-font:20px;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:
+      radial-gradient(900px 500px at 10% 10%, rgba(100,40,160,0.12), transparent),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#efe8ff;
+    font-size:var(--base-font);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* decorative blurred blobs */
+  .blur-deco{position:fixed;pointer-events:none;z-index:0;}
+  .blur-deco.one{width:500px;height:420px;left:-120px;top:-80px;background:linear-gradient(135deg,var(--cornflower),rgba(138,43,226,0.7));filter:blur(72px);opacity:0.12;border-radius:50%;}
+  .blur-deco.two{width:420px;height:340px;right:-80px;bottom:-100px;background:linear-gradient(135deg,rgba(138,43,226,0.9),rgba(85,0,102,0.8));filter:blur(62px);opacity:0.14;border-radius:50%;}
+
+  .page{min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:22px;box-sizing:border-box;position:relative;z-index:1;}
+  .wrap{
+    width:100%;
+    max-width:1300px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border-radius:14px;
+    padding:14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+    border:1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    overflow:hidden;
+  }
+
+  /* Header: avatar + horizontal chat + header controls */
+  .header{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    padding:12px;
+    border-radius:10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+    border:1px solid rgba(255,255,255,0.02);
+    margin-bottom:12px;
+    position:relative;
+    z-index:2;
+  }
+  .avatar{
+    width:88px;height:88px;border-radius:16px;overflow:hidden;border:2px solid rgba(255,255,255,0.06);
+    background:linear-gradient(180deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .chat-strip{flex:1; overflow-x:auto; overflow-y:hidden; white-space:nowrap; padding:10px 8px; gap:10px; display:flex; align-items:center; scrollbar-width: thin;}
+  .chip{display:inline-block; padding:10px 14px; border-radius:999px; margin-right:10px; background:rgba(255,255,255,0.02); color:var(--muted); border:1px solid rgba(255,255,255,0.02); font-family: 'Inter', sans-serif; font-size:0.98rem; box-shadow: 0 6px 22px rgba(0,0,0,0.45);}
+  .chip.me{background:linear-gradient(90deg,var(--cornflower), rgba(100,149,237,0.12)); color:#f3f9ff; border:1px solid rgba(100,149,237,0.22);}
+  .chip.bot{background:linear-gradient(90deg, rgba(138,43,226,0.06), rgba(85,0,102,0.04)); color:var(--muted);}
+
+  .header-controls{display:flex;gap:8px;align-items:center}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;cursor:pointer;font-family:inherit}
+  .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--cornflower));border:none;color:#fff;box-shadow:0 10px 30px rgba(100,149,237,0.12);}
+
+  /* main content: left = console+quest+certificate+archive, right = chat area (log + respond controls) */
+  .content{display:grid;grid-template-columns:420px 1fr; gap:18px; align-items:start;}
+
+  .card{padding:18px;border-radius:12px;background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));border:1px solid rgba(255,255,255,0.02);backdrop-filter: blur(4px); display:flex; flex-direction:column;}
+  .left-card{min-height:360px;}
+  .right-card{min-height:360px;}
+
+  .dos{font-family: 'VT323', monospace; font-size:18px; color:var(--muted); background:rgba(0,0,0,0.26); padding:12px; border-radius:10px; height:140px; overflow:auto; border:1px solid rgba(255,255,255,0.02);}
+
+  .section-title{font-family:'Cinzel',serif;color:var(--neon);font-size:18px;margin-bottom:6px}
+  .muted{color:var(--muted);font-size:0.95rem}
+  .cert-thumb{width:100%;height:160px;border-radius:10px;background:linear-gradient(90deg,#2a0830,#5e0a60);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.04);overflow:hidden;}
+  .controls{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}
+  .saved{margin-top:10px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));font-size:0.98rem;color:var(--muted);}
+
+  /* chat area (right column) — ensure it starts at top under the header and stays visible */
+  .chat-area{display:flex;flex-direction:column;gap:12px;flex:1;min-height:260px;}
+  .chat-log{
+    flex:1;
+    min-height:200px;
+    max-height:60vh;
+    overflow:auto;
+    padding:12px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+    border:1px solid rgba(255,255,255,0.02);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .bubble{max-width:80%;padding:12px 16px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:#eae2ff;box-shadow:0 8px 26px rgba(0,0,0,0.45);font-size:1rem}
+  .bubble.bot{align-self:flex-start;background:linear-gradient(180deg, rgba(138,43,226,0.06), rgba(85,0,102,0.04));color:var(--muted);font-family:'VT323',monospace}
+  .bubble.me{align-self:flex-end;background:linear-gradient(90deg,var(--cornflower),rgba(100,149,237,0.12));color:#f3f9ff}
+
+  .input-row{display:flex;gap:10px;align-items:center;padding-top:8px}
+  .input-row input{flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;font-family:inherit}
+
+  /* Lore modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(4px);}
+  .modal{width:92%;max-width:920px;background:linear-gradient(180deg, rgba(20,6,20,0.95), rgba(12,3,18,0.92));padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 30px 80px rgba(0,0,0,0.7);color:#f5eefb;max-height:86vh;overflow:auto;}
+  .modal h2{font-family:'Cinzel',serif;color:var(--neon);margin:8px 0 6px 0}
+  .modal p{color:rgba(255,255,255,0.9);line-height:1.45}
+  .modal .close{position:absolute;right:18px;top:14px;background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer}
+
+  /* responsive */
+  @media (max-width:980px){
+    .content{grid-template-columns:1fr;}
+    :root{ --base-font:18px; }
+    .avatar{width:72px;height:72px}
+    .chat-log{max-height:44vh}
+  }
+</style>
+</head>
+<body>
+<div class="blur-deco one"></div>
+<div class="blur-deco two"></div>
+
+<div class="page">
+  <div class="wrap" role="application" aria-label="Nocturnal Quest">
+
+    <!-- HEADER: avatar + horizontal chat + header controls -->
+    <div class="header" role="banner">
+      <div class="avatar" id="avatarBtn" title="Click to change avatar (stored locally)">
+        <img id="avatarImg" alt="avatar"/>
+      </div>
+
+      <div class="chat-strip" id="chatStrip" aria-live="polite" role="log" title="Nocturne chat strip"></div>
+
+      <div class="header-controls">
+        <button class="btn" id="loreBtn" title="Read lore & options">Lore</button>
+        <button class="btn" id="avatarResetBtn" title="Reset avatar">Reset</button>
+      </div>
+    </div>
+
+    <!-- MAIN content: left column = console + quest + certificate + archive; right column = chat area (log + respond controls) -->
+    <div class="content">
+      <div class="card left-card" id="leftColumn">
+        <div class="section-title">Nocturne Console</div>
+        <div class="dos" id="dosArea"></div>
+
+        <div style="margin-top:12px">
+          <div id="interactiveArea" style="min-height:120px">
+            <div class="muted" id="promptLine">Enter your name on the right and click Respond to begin your trial.</div>
+            <div id="choiceArea" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:14px 0">
+
+        <div class="section-title">Nocturnal Quest & Certificate</div>
+        <div class="muted">7 questions to reveal your Vampire Type.</div>
+
+        <div id="resultCard" style="margin-top:12px">
+          <div id="resultIntro" style="font-weight:700;color:var(--neon);font-family:'Cinzel',serif">Awaiting initiation...</div>
+          <div id="resultBody" class="muted" style="margin-top:8px">Nocturne awaits your consent on the right-hand chat panel.</div>
+
+          <div id="certPreviewArea" style="display:none;margin-top:12px">
+            <div class="cert-thumb" id="certThumb">Preview</div>
+            <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px">
+              <button class="btn" id="downloadBtn">Download PNG</button>
+              <button class="btn" id="saveDiskBtn">Save to disk...</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="section-title" style="font-size:16px">Local Archive</div>
+          <div class="saved" id="savedList" style="min-height:120px">No certificates saved yet.</div>
+        </div>
+      </div>
+
+      <div class="card right-card" id="rightColumn">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="section-title">Nocturne Chat</div>
+            <div class="muted">All conversation — bot and player — appears here.</div>
+          </div>
+        </div>
+
+        <div class="chat-area" style="margin-top:10px;">
+          <!-- Chat log sits at the top of this column so it is immediately visible under the header -->
+          <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-atomic="false"></div>
+
+          <!-- Respond controls (moved to right column so responses align visually with chat) -->
+          <div class="input-row" style="margin-top:8px;">
+            <input id="nameInput" placeholder="What should we call you?" aria-label="Enter your name">
+            <button class="btn primary" id="startBtn">Respond</button>
+            <button class="btn" id="mailBtn" title="Email admin for help">Help</button>
+            <button class="btn" id="clearSavedBtn" title="Clear saved archive">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lore modal -->
+    <div id="loreBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="modal" role="document" aria-labelledby="loreTitle">
+        <button class="close" id="loreCloseBtn" title="Close lore">✕</button>
+        <h2 id="loreTitle">Lore & Reflections: Christianity and Vampirism</h2>
+        <p>
+          Vampirism and Christianity intersect in many literary and symbolic ways. Below are concise parallels and themes you can explore while playing — and a short reading list if you want deeper context.
+        </p>
+
+        <h3 style="margin-top:10px">Parallel themes</h3>
+        <ul>
+          <li><strong>Blood and Communion</strong> — Christian Eucharistic language treats Christ’s blood as life and salvation. Vampiric narratives repurpose blood as power, vitality, or corruption; where communion unites and redeems, vampiric feeding often alienates and transforms.</li>
+          <li><strong>Sacrifice vs. Consumption</strong> — Christ’s self-giving is redemptive. Vampire stories frequently invert this: immortality acquired by consuming others raises ethical and spiritual questions about atonement and damnation.</li>
+          <li><strong>Resurrection & Immortality</strong> — Vampires dramatize a perverted resurrection: continued life without final rest or redemption. This contrast invites reflections on the meaning of eternal life versus cursed unending existence.</li>
+          <li><strong>Symbols & Ritual</strong> — Crosses, holy water, and prayers function as boundaries in vampire fiction; they dramatize cultural conflict between sacred rites and profane transformations.</li>
+          <li><strong>Charisma and the Anti-Messiah</strong> — Many vampires are charismatic, attracting followers or lovers. This can be framed as an anti-messianic figure who offers worldly power at spiritual cost.</li>
+        </ul>
+
+        <h3 style="margin-top:10px">How this influences the quest</h3>
+        <p>
+          If you enable the lore questions, the quest will occasionally use language or situations that echo ritual, sacrifice, or symbolic choice. Those questions are optional and simply enrich the thematic experience.
+        </p>
+
+        <h3 style="margin-top:10px">Suggested reading</h3>
+        <ul>
+          <li>Bram Stoker — <em>Dracula</em></li>
+          <li>Anne Rice — <em>Interview with the Vampire</em></li>
+          <li>Clive Barker — selected fiction</li>
+          <li>Scholarly essays on religious symbolism in gothic literature</li>
+        </ul>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
+          <label style="display:flex;gap:8px;align-items:center">
+            <input type="checkbox" id="includeLoreCheckbox" />
+            <span class="muted">Include lore-flavored questions in the quest</span>
+          </label>
+          <div style="flex:1"></div>
+          <button class="btn primary" id="loreSaveBtn">Save</button>
+        </div>
+
+        <p style="margin-top:12px;color:var(--muted);font-size:0.95rem">Notes: the lore panel is for exploration and atmosphere. If you'd like explicit citations or a longer essay, I can add a dedicated "Lore Library" section with downloadable reading lists.</p>
+      </div>
+    </div>
+
+    <!-- hidden controls -->
+    <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+    <canvas id="certCanvas" width="1400" height="800" style="display:none"></canvas>
+
+  </div>
+</div>
+
+<script>
+/* Updated layout fix:
+   - Ensures chat-log sits at the top of the right column directly under the header,
+     and the Respond controls are directly beneath the chat log (so responses line up).
+   - All previous features retained: avatar upload, lore modal, local storage archive, certificate generation, mailto help.
+   - Change adminEmail before publishing.
+*/
+const adminEmail = "admin@example.com"; // <-- REPLACE before deploying
+
+// UI refs
+const chatStrip = document.getElementById('chatStrip');
+const chatLog = document.getElementById('chatLog');
+const avatarBtn = document.getElementById('avatarBtn');
+const avatarImg = document.getElementById('avatarImg');
+const avatarInput = document.getElementById('avatarInput');
+const avatarResetBtn = document.getElementById('avatarResetBtn');
+
+const dosArea = document.getElementById('dosArea');
+const promptLine = document.getElementById('promptLine');
+const choiceArea = document.getElementById('choiceArea');
+
+const resultIntro = document.getElementById('resultIntro');
+const resultBody = document.getElementById('resultBody');
+const certPreviewArea = document.getElementById('certPreviewArea');
+const certThumb = document.getElementById('certThumb');
+const downloadBtn = document.getElementById('downloadBtn');
+const saveDiskBtn = document.getElementById('saveDiskBtn');
+const mailBtn = document.getElementById('mailBtn');
+const savedList = document.getElementById('savedList');
+const clearSavedBtn = document.getElementById('clearSavedBtn');
+
+const loreBtn = document.getElementById('loreBtn');
+const loreBackdrop = document.getElementById('loreBackdrop');
+const loreCloseBtn = document.getElementById('loreCloseBtn');
+const includeLoreCheckbox = document.getElementById('includeLoreCheckbox');
+const loreSaveBtn = document.getElementById('loreSaveBtn');
+
+const nameInput = document.getElementById('nameInput');
+const startBtn = document.getElementById('startBtn');
+
+const canvas = document.getElementById('certCanvas');
+const ctx = canvas.getContext('2d');
+
+// localStorage keys
+const AVATAR_KEY = 'nocturne_avatar_v1';
+const STATE_KEY = 'nocturne_state_v1';
+const CERTS_KEY = 'nocturne_certificates_v1';
+const LORE_KEY = 'nocturne_lore_settings_v1';
+
+// Questions and types
+const BASE_QUESTIONS = [
+  { q: "You step into the moonlit courtyard. What draws your attention first?", a:[
+    {t:'Aristocrat', text:'A grand chandelier and marble statues.'},
+    {t:'Nosferatu', text:'A shadowed drain leading to the sewers.'},
+    {t:'NightHunter', text:'A rusted crossbow hidden behind ivy.'},
+  ]},
+  { q: "What do you sip from the chalice?", a:[
+    {t:'Bloodseer', text:'A mysterious crimson liquid that whispers.'},
+    {t:'Aristocrat', text:'A rare wine, aged and refined.'},
+    {t:'Nosferatu', text:'Cold iron water, bitter but necessary.'},
+  ]},
+  { q: "Your power is strongest when:", a:[
+    {t:'Ancient', text:'You stand atop a ruined altar and remember old names.'},
+    {t:'NightHunter', text:'You hunt beneath rainy rooftops.'},
+    {t:'Bloodseer', text:'You peer into reflections and dream of futures.'},
+  ]},
+  { q: "A rival approaches. You:", a:[
+    {t:'Aristocrat', text:'Invite them politely to a duel of wits.'},
+    {t:'Nosferatu', text:'Lurk and strike when they are alone.'},
+    {t:'NightHunter', text:'Traps and precision — you never miss.'},
+  ]},
+  { q: "Your emblem would most likely be:", a:[
+    {t:'Bloodseer', text:'An eye within a crescent moon.'},
+    {t:'Ancient', text:'A ringed star, weathered by time.'},
+    {t:'Aristocrat', text:'A fleur-de-lune embroidered in silver.'},
+  ]},
+  { q: "Choose a companion:", a:[
+    {t:'Nosferatu', text:'A roguish alley fox with daring.'},
+    {t:'Bloodseer', text:'A raven that carries secrets.'},
+    {t:'Ancient', text:'A slow tortoise, ancient as stone.'},
+  ]},
+  { q: "Your philosophy:", a:[
+    {t:'NightHunter', text:'Purpose is honed by the hunt.'},
+    {t:'Aristocrat', text:'Beauty and influence shape the night.'},
+    {t:'Bloodseer', text:'Knowledge leaks between the folds of dreams.'},
+  ]},
+];
+
+const LORE_QUESTIONS = [
+  { q: "A ritual is offered — you must either give or receive. You:", a:[
+    {t:'Bloodseer', text:'Accept to see what visions it opens.'},
+    {t:'Aristocrat', text:'Refuse politely — rituals are for the desperate.'},
+    {t:'Ancient', text:'Participate slowly; every ritual costs a memory.'},
+  ]},
+  { q: "A symbol stands before you (a cross, a chalice, a broken crown). You:", a:[
+    {t:'Nosferatu', text:'Use it as cover and step into shadow.'},
+    {t:'Bloodseer', text:'Read its story for hidden omens.'},
+    {t:'Aristocrat', text:'Wear it as an emblem and command attention.'},
+  ]},
+];
+
+const TYPES = {
+  'Aristocrat': { title:'The Aristocrat', desc:'A charismatic vampire of salons and shadows — elegant, persuasive, and dangerously cultured.'},
+  'Nosferatu': { title:'The Nosferatu', desc:'A creature of cobbles and sewers — stealthy, primal, and unafraid of darkness.'},
+  'NightHunter': { title:'The Night Hunter', desc:'A lethal predator who stalks by moonlight with surgical precision.'},
+  'Bloodseer': { title:'The Bloodseer', desc:'A mystic of crimson visions — communes with omens and portents.'},
+  'Ancient': { title:'The Ancient', desc:'Slow, knowing and immovable — a repository of long memory and old magics.'},
+};
+
+// app state
+let state = { name:null, qIndex:-1, scores:{}, answers:[], lastCert:null };
+let activeQuestions = BASE_QUESTIONS.slice();
+let loreSettings = { includeLore: false };
+
+// --- avatar ---
+const defaultAvatarData = (() => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' width='240' height='240'><rect x='6' y='8' width='52' height='48' rx='10' fill='#2c0530'/><path d='M32 6c-4 0-6 4-6 4s-1.25 6.5-1.25 9.5C24.75 24 29 28 29 28h10s4.25-4 4.25-8.5C43.25 16.5 42 10 42 10s-2-4-6-4c-2.5 0-3.5 1.5-4 2.5C35.5 7.5 34 6 32 6z' fill='#120012' opacity='0.9'/><circle cx='24.5' cy='30.5' r='3' fill='#fff' opacity='.9'/><circle cx='39.5' cy='30.5' r='3' fill='#fff' opacity='.9'/></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+})();
+
+function loadAvatar(){
+  const raw = localStorage.getItem(AVATAR_KEY);
+  avatarImg.src = raw || defaultAvatarData;
+  avatarImg.style.display = 'block';
+}
+avatarBtn.addEventListener('click', ()=> avatarInput.click());
+avatarResetBtn.addEventListener('click', ()=> {
+  if(confirm('Reset avatar to default?')){ localStorage.removeItem(AVATAR_KEY); loadAvatar(); addBubble('Avatar reset','bot'); showChip('Avatar reset', 'bot'); }
+});
+avatarInput.addEventListener('change', async (ev)=>{
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  if(!f.type.startsWith('image/')) { alert('Please choose an image file.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const data = reader.result;
+    avatarImg.src = data;
+    localStorage.setItem(AVATAR_KEY, data);
+    addBubble('You updated your avatar. Stylish.', 'bot');
+    showChip('Avatar updated', 'me');
+  };
+  reader.readAsDataURL(f);
+});
+
+// --- chat helpers ---
+function showChip(text, who='bot'){
+  const el = document.createElement('div');
+  el.className = 'chip ' + (who==='me' ? 'me' : 'bot');
+  el.textContent = text;
+  chatStrip.appendChild(el);
+  while(chatStrip.children.length > 50) chatStrip.removeChild(chatStrip.firstChild);
+  chatStrip.scrollLeft = chatStrip.scrollWidth;
+  addBubble(text, who); // mirror to main chat log so everything lines up
+}
+
+function addBubble(text, who='bot'){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (who==='me' ? 'me' : 'bot');
+  b.textContent = text;
+  chatLog.appendChild(b);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  const max = 200;
+  while(chatLog.children.length > max) chatLog.removeChild(chatLog.firstChild);
+}
+
+// --- DOS boot ---
+const START = [
+  "INIT.Nocturne v1.0.6",
+  "Loading nocturnal modules... [OK]",
+  "Establishing moonlink... [OK]",
+  "Decrypting velvet keys... [OK]",
+  "Nocturne AI ready.",
+  "Please identify yourself."
+];
+function dosBoot(){
+  dosArea.textContent = '';
+  let i=0;
+  function step(){
+    if(i>=START.length) return;
+    const line = START[i++];
+    const div = document.createElement('div'); div.textContent = line;
+    dosArea.appendChild(div); dosArea.scrollTop = dosArea.scrollHeight;
+    setTimeout(step, 320 + Math.random()*320);
+  }
+  step();
+}
+
+// --- state load/save ---
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STATE_KEY);
+    if(raw) state = Object.assign(state, JSON.parse(raw));
+    if(state.name) nameInput.value = state.name;
+  }catch(e){}
+  try{
+    const rawLore = JSON.parse(localStorage.getItem(LORE_KEY) || '{}');
+    loreSettings = Object.assign(loreSettings, rawLore);
+    includeLoreCheckbox.checked = !!loreSettings.includeLore;
+  }catch(e){}
+  const saved = JSON.parse(localStorage.getItem(CERTS_KEY) || '[]');
+  if(saved && saved.length){
+    const latest = saved[0];
+    certPreviewArea.style.display='block';
+    certThumb.style.backgroundImage = `url(${latest.png})`;
+    certThumb.style.backgroundSize='cover';
+    resultIntro.textContent = latest.type;
+    resultBody.textContent = latest.desc;
+    state.lastCert = latest;
+  }
+  renderSavedList();
+}
+function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+function saveLoreSettings(){ localStorage.setItem(LORE_KEY, JSON.stringify(loreSettings)); }
+
+// --- saved list render ---
+function renderSavedList(){
+  const arr = JSON.parse(localStorage.getItem(CERTS_KEY) || '[]');
+  if(!arr.length){ savedList.textContent = 'No certificates saved yet.'; return; }
+  savedList.innerHTML = '';
+  arr.forEach((c)=>{
+    const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.marginBottom='8px';
+    const left = document.createElement('div'); left.innerHTML = `<strong style="color:#fff">${escapeHtml(c.name)}</strong> — <span style="color:var(--muted)">${escapeHtml(c.type)}</span><div style="font-size:0.9rem;color:var(--muted)">${new Date(c.date).toLocaleString()}</div>`;
+    const right = document.createElement('div');
+    const d = document.createElement('button'); d.className='btn'; d.textContent='Download PNG';
+    d.addEventListener('click', ()=> downloadDataUrl(c.png, `certificate-${c.name.replace(/\s+/g,'_')}.png`));
+    right.appendChild(d);
+    row.appendChild(left); row.appendChild(right); savedList.appendChild(row);
+  });
+}
+
+// --- start / question flow ---
+startBtn.addEventListener('click', ()=>{
+  const name = (nameInput.value || '').trim();
+  if(!name) { nameInput.focus(); return; }
+  state.name = name; state.qIndex = -1; state.scores = {}; state.answers = []; state.lastCert = null;
+  saveState();
+  activeQuestions = loreSettings.includeLore ? LORE_QUESTIONS.concat(BASE_QUESTIONS) : BASE_QUESTIONS.slice();
+  choiceArea.innerHTML = ''; promptLine.textContent = '';
+  showChip(`Welcome ${name}. Do you desire a quest?`, 'bot');
+  presentYesNo();
+  resultIntro.textContent = `Welcome, ${name}`; resultBody.textContent = 'Nocturne awaits.';
+});
+
+function presentYesNo(){
+  choiceArea.innerHTML = '';
+  const btnYes = document.createElement('button'); btnYes.className='btn primary'; btnYes.textContent='Yes';
+  const btnNo = document.createElement('button'); btnNo.className='btn'; btnNo.textContent='No';
+  btnYes.onclick = ()=>{ showChip('Yes', 'me'); choiceArea.innerHTML=''; startQuestions(); };
+  btnNo.onclick = ()=>{ showChip('No', 'me'); choiceArea.innerHTML=''; showChip('Return when moonlight calls.', 'bot'); };
+  choiceArea.appendChild(btnYes); choiceArea.appendChild(btnNo);
+}
+
+function startQuestions(){
+  state.qIndex = 0; saveState(); showNextQuestion();
+}
+function showNextQuestion(){
+  choiceArea.innerHTML = '';
+  const q = activeQuestions[state.qIndex];
+  showChip(`Q${state.qIndex+1}: ${q.q}`, 'bot');
+  const qdiv = document.createElement('div'); qdiv.style.marginTop='10px';
+  q.a.forEach(opt=>{
+    const b = document.createElement('button'); b.className='btn'; b.style.marginRight='8px'; b.textContent = opt.text;
+    b.onclick = ()=>{
+      showChip(opt.text, 'me'); recordAnswer(opt.t, opt.text);
+      setTimeout(()=> {
+        state.qIndex++;
+        if(state.qIndex < activeQuestions.length) showNextQuestion();
+        else finishQuest();
+      }, 420);
+    };
+    qdiv.appendChild(b);
+  });
+  choiceArea.appendChild(qdiv);
+}
+
+function recordAnswer(type, text){
+  state.answers.push({q: state.qIndex+1, type, text});
+  state.scores[type] = (state.scores[type] || 0) + 1;
+  saveState();
+}
+
+function determineType(){
+  const keys = Object.keys(TYPES);
+  let best=null, bestScore=-1;
+  keys.forEach(k => { const s = state.scores[k] || 0; if(s > bestScore){ best = k; bestScore = s; }});
+  const topScore = bestScore;
+  const tied = keys.filter(k => (state.scores[k] || 0) === topScore);
+  return tied.length === 1 ? tied[0] : tied.join(' + ');
+}
+
+function finishQuest(){
+  const f = determineType();
+  const info = TYPES[f] || { title:f, desc:'A unique synthesis of nocturnal traits.'};
+  resultIntro.textContent = info.title; resultBody.textContent = info.desc;
+  certPreviewArea.style.display = 'block';
+  const png = generateCertificatePNG(state.name, info.title, info.desc);
+  certThumb.style.backgroundImage = `url(${png})`; certThumb.style.backgroundSize='cover';
+  const certObj = { name: state.name, type: info.title, desc: info.desc, date: new Date().toISOString(), png };
+  state.lastCert = certObj; saveToArchive(certObj); saveState();
+  showChip(`The trial concludes. You are: ${info.title}`, 'bot');
+}
+
+// --- certificate generation ---
+function generateCertificatePNG(name, typeTitle, typeDesc){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  g.addColorStop(0,'#120016'); g.addColorStop(1,'#3b0640');
+  ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 8;
+  roundRect(ctx, 40,40,canvas.width-80,canvas.height-80,30); ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,255,255,0.96)'; ctx.font = '52px Cinzel, serif'; ctx.textAlign = 'center';
+  ctx.fillText('Certificate of Nocturnal Essence', canvas.width/2, 150);
+
+  ctx.fillStyle = 'rgba(100,149,237,0.98)'; ctx.font='44px Cinzel, serif'; ctx.fillText(typeTitle, canvas.width/2, 220);
+
+  ctx.font = '72px VT323, monospace'; ctx.fillStyle = '#fff'; ctx.fillText(name, canvas.width/2, 320);
+
+  ctx.font = '22px VT323, monospace'; ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  wrapText(ctx, `This certifies that ${name} completed the Nocturnal Quest and its traits align with "${typeTitle}". ${typeDesc}`, canvas.width/2, 370, canvas.width - 360, 32);
+
+  const now = new Date(); ctx.font = '18px VT323, monospace'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillText(`Issued: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`, canvas.width/2, 560);
+  const serial = 'NV-' + Math.random().toString(36).slice(2,12).toUpperCase();
+  ctx.fillText(`Serial: ${serial}`, canvas.width/2, 590);
+
+  ctx.strokeStyle = 'rgba(100,149,237,0.16)'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(220,660); ctx.bezierCurveTo(460,620,940,700,1180,660); ctx.stroke();
+
+  return canvas.toDataURL('image/png');
+}
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(' '); let line = '';
+  for(let n=0;n<words.length;n++){
+    const test = line + words[n] + ' ';
+    if(ctx.measureText(test).width > maxWidth && n>0){ ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; } else line = test;
+  }
+  ctx.fillText(line, x, y); return y;
+}
+
+// --- archive / download / save to disk ---
+function saveToArchive(cert){ const arr = JSON.parse(localStorage.getItem(CERTS_KEY) || '[]'); arr.unshift(cert); if(arr.length>12) arr.pop(); localStorage.setItem(CERTS_KEY, JSON.stringify(arr)); renderSavedList(); }
+function downloadDataUrl(dataUrl, filename){ const a = document.createElement('a'); a.href = dataUrl; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); }
+downloadBtn.addEventListener('click', ()=> { if(state.lastCert) downloadDataUrl(state.lastCert.png, `certificate-${state.name.replace(/\s+/g,'_')}.png`); });
+saveDiskBtn.addEventListener('click', async ()=>{
+  if(!state.lastCert) return alert('No certificate to save.');
+  if(window.showSaveFilePicker){
+    try{
+      const opts = { suggestedName: `certificate-${state.name.replace(/\s+/g,'_')}.png`, types:[{description:'PNG', accept:{'image/png':['.png']}}] };
+      const h = await window.showSaveFilePicker(opts); const w = await h.createWritable(); const blob = dataURLtoBlob(state.lastCert.png); await w.write(blob); await w.close();
+      alert('Saved via browser file picker.');
+    }catch(e){ console.warn(e); alert('Save cancelled or unavailable.'); }
+  } else downloadDataUrl(state.lastCert.png, `certificate-${state.name.replace(/\s+/g,'_')}.png`);
+});
+function dataURLtoBlob(dataurl){ var arr=dataurl.split(','), mime=arr[0].match(/:(.*?);/)[1], bstr=atob(arr[1]), n=bstr.length, u8=new Uint8Array(n); while(n--) u8[n]=bstr.charCodeAt(n); return new Blob([u8], {type:mime}); }
+
+// --- mail/help and clear ---
+mailBtn.addEventListener('click', ()=>{
+  const name = state.name || 'Unknown'; const result = (state.lastCert && state.lastCert.type) ? state.lastCert.type : 'No result';
+  const subject = encodeURIComponent(`Help: Nocturnal Quest — ${name}`);
+  const body = encodeURIComponent(`Hello admin,\n\nI need help with the Nocturnal Quest.\n\nName: ${name}\nResult: ${result}\nDate: ${new Date().toLocaleString()}\n\nThanks,\n${name}`);
+  window.location.href = `mailto:${adminEmail}?subject=${subject}&body=${body}`;
+});
+clearSavedBtn.addEventListener('click', ()=> {
+  if(confirm('Clear local certificate archive? This only removes items stored locally in your browser.')) { localStorage.removeItem(CERTS_KEY); renderSavedList(); addBubble('Archive cleared', 'bot'); showChip('Archive cleared', 'bot'); }
+});
+
+// --- lore modal controls ---
+loreBtn.addEventListener('click', ()=> { loreBackdrop.style.display = 'flex'; loreBackdrop.setAttribute('aria-hidden','false'); });
+loreCloseBtn.addEventListener('click', closeLore);
+loreBackdrop.addEventListener('click', (e)=> { if(e.target === loreBackdrop) closeLore(); });
+function closeLore(){ loreBackdrop.style.display='none'; loreBackdrop.setAttribute('aria-hidden','true'); }
+
+loreSaveBtn.addEventListener('click', ()=> {
+  loreSettings.includeLore = !!includeLoreCheckbox.checked;
+  saveLoreSettings();
+  closeLore();
+  addBubble(loreSettings.includeLore ? 'Lore questions enabled' : 'Lore questions disabled', 'bot');
+  showChip(loreSettings.includeLore ? 'Lore questions enabled' : 'Lore questions disabled', 'bot');
+});
+
+// --- helpers ---
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>'&#'+m.charCodeAt(0)+';'); }
+
+// --- bootstrap ---
+function loadAll(){ loadAvatar(); dosBoot(); loadState(); showChip('Greetings. Enter your name on the right and click Respond.','bot'); }
+loadAll();
+
+</script>
+</body>
+</html>
