@@ -10,15 +10,8 @@
 
 <style>
   :root{
-    --bg1:#05030a;
-    --bg2:#12001a;
-    --cornflower:#6495ED;
-    --accent1:#8a2be2;
-    --accent2:#550066;
-    --muted:#cfc1e6;
-    --neon:#c97bff;
-    --glass: rgba(255,255,255,0.03);
-    --base:18px;
+    --bg1:#05030a; --bg2:#12001a; --cornflower:#6495ED; --accent1:#8a2be2; --accent2:#550066;
+    --muted:#cfc1e6; --neon:#c97bff; --glass: rgba(255,255,255,0.03); --base:18px;
   }
   html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:
     radial-gradient(800px 400px at 12% 8%, rgba(100,149,237,0.08), transparent),
@@ -56,7 +49,7 @@
 
   .input-row{display:flex;gap:8px;margin-top:10px}
 
-  /* Avatar placement (PNG) */
+  /* Avatar */
   .avatar { width:92px;height:92px;border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,0.06); background:linear-gradient(180deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 40px rgba(0,0,0,0.6); }
   .avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
 
@@ -90,9 +83,8 @@
           <div class="codeBadge" id="introCode">ABCDE</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <div style="display:flex;gap:8px"><button id="introCopyBtn" class="btn">Copy</button><button id="introSaveBtn" class="btn">Save file</button></div>
-            <div class="muted">Type the code below to confirm and continue.</div>
-            <input id="confirmCode" type="text" placeholder="Enter code to confirm" />
-            <div style="display:flex;gap:8px">
+            <div class="muted">Click Confirm to accept this code and continue.</div>
+            <div style="display:flex;gap:8px;align-items:center">
               <label style="display:flex;gap:8px;align-items:center;color:var(--muted)"><input id="introKeep" type="checkbox" checked /> keep me logged in 24h</label>
               <div style="flex:1"></div>
               <button id="introConfirmBtn" class="btn primary">Confirm</button>
@@ -130,7 +122,6 @@
   <section class="card">
     <div style="display:flex;gap:12px;align-items:center">
       <div class="avatar" id="avatarBtn" title="Click to upload avatar (stored locally)">
-        <!-- placeholder PNG - replace with your own or let users upload -->
         <img id="avatarImg" src="https://placehold.co/92x92/png?text=V" alt="avatar">
       </div>
       <div style="flex:1">
@@ -198,21 +189,19 @@
 <canvas id="certCanvas" width="1400" height="800" style="display:none"></canvas>
 
 <script>
-/* Implementation notes:
-   - Console prompt (#consolePrompt) shows questions in cornflower blue.
-   - User bubble (.bubble.me) shows user text (including their name) in cornflower blue.
-   - Avatar PNG placeholder is used; click to upload (saved in localStorage).
-   - Quest start, questions, and certificate flow are implemented client-side.
+/* Simplified, robust login + quest + avatar.
+   Use "Log in" to generate a code immediately, confirm to enter app.
+   Restore via "Have a code?" if you saved a code previously.
 */
 
-// storage keys
+// keys
 const SESSION_KEY = 'vampish_session_v1';
 const CERTS_KEY = 'vampish_certs_v1';
 const LORE_KEY = 'vampish_lore_v1';
 const AVATAR_KEY = 'vampish_avatar_v1';
 const STATE_KEY = 'vampish_state_v1';
 
-// DOM refs
+// DOM
 const intro = document.getElementById('intro');
 const introLoginBtn = document.getElementById('introLoginBtn');
 const introRestoreBtn = document.getElementById('introRestoreBtn');
@@ -224,7 +213,6 @@ const introCopyBtn = document.getElementById('introCopyBtn');
 const introSaveBtn = document.getElementById('introSaveBtn');
 const introConfirmBtn = document.getElementById('introConfirmBtn');
 const introKeep = document.getElementById('introKeep');
-const confirmCode = document.getElementById('confirmCode');
 const restoreArea = document.getElementById('restoreArea');
 const restoreInputIntro = document.getElementById('restoreInputIntro');
 const restoreConfirmBtn = document.getElementById('restoreConfirmBtn');
@@ -251,7 +239,7 @@ const avatarBtn = document.getElementById('avatarBtn');
 const avatarImg = document.getElementById('avatarImg');
 const avatarInput = document.getElementById('avatarInput');
 
-// app state
+// state
 let session = null;
 let generatedCode = null;
 let state = { name:null, qIndex:-1, scores:{}, answers:[], lastCert:null };
@@ -267,24 +255,23 @@ function readSavedSession(){ try{ const raw = JSON.parse(localStorage.getItem(SE
 function saveSessionLocal(code,name,expiry){ localStorage.setItem(SESSION_KEY, JSON.stringify({ code, name, expiry })); }
 function clearSavedSession(){ localStorage.removeItem(SESSION_KEY); }
 
-// avatar load/upload
+// avatar upload
 function loadAvatar(){ const raw = localStorage.getItem(AVATAR_KEY); if(raw) avatarImg.src = raw; }
 avatarBtn.addEventListener('click', ()=> avatarInput.click());
 avatarInput.addEventListener('change', e=>{ const f = e.target.files && e.target.files[0]; if(!f) return; if(!f.type.startsWith('image/')) return alert('Choose an image file.'); const r = new FileReader(); r.onload = ()=>{ localStorage.setItem(AVATAR_KEY, r.result); avatarImg.src = r.result; showBubble('Avatar updated.', 'bot'); }; r.readAsDataURL(f); });
 
-// chat & console helpers
+// chat helpers
 function showBubble(text, who='bot'){ const el = document.createElement('div'); el.className = 'bubble ' + (who==='me' ? 'me' : 'bot'); el.textContent = text; chatLog.appendChild(el); chatLog.scrollTop = chatLog.scrollHeight; while(chatLog.children.length > 300) chatLog.removeChild(chatLog.firstChild); pulseAvatar(); }
 function addConsolePrompt(text){ consolePrompt.textContent = text; }
 
-// small visual pulse for avatar when bot speaks
+// small pulse
 let pulseTimer = null;
 function pulseAvatar(){ avatarBtn.style.boxShadow = '0 0 30px rgba(100,149,237,0.18)'; clearTimeout(pulseTimer); pulseTimer = setTimeout(()=> avatarBtn.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)', 700); }
 
 // DOS boot
 function dosBoot(){ const lines = ["INIT.Nocturne v2.0","Loading nocturnal modules... [OK]","Establishing moonlink... [OK]","Decrypting velvet keys... [OK]","Nocturne AI standing by."]; dosArea.innerHTML=''; let i=0; function step(){ if(i>=lines.length){ dosArea.innerHTML += '<br/>Ready.'; return; } dosArea.innerHTML += lines[i++] + '<br/>'; dosArea.scrollTop = dosArea.scrollHeight; setTimeout(step, 420 + Math.random()*240); } step(); }
 
-// init & intro handlers
-function resetIntroUI(){ nameBox.style.display='none'; generatedArea.style.display='none'; restoreArea.style.display='none'; welcomeArea.style.display='none'; }
+// initialization
 (function init(){
   loadAvatar();
   renderSavedList();
@@ -293,18 +280,16 @@ function resetIntroUI(){ nameBox.style.display='none'; generatedArea.style.displ
   const s = readSavedSession();
   if(s){ welcomeArea.style.display = 'block'; welcomeText.textContent = `Welcome, ${s.name || 'traveler'}`; } else { resetIntroUI(); }
 
-  introLoginBtn.addEventListener('click', ()=>{ resetIntroUI(); nameBox.style.display = 'block'; });
-  introRestoreBtn.addEventListener('click', ()=>{ resetIntroUI(); restoreArea.style.display='flex'; });
+  introLoginBtn.addEventListener('click', ()=> { resetIntroUI(); generatedCode = randCode(5); introCode.textContent = generatedCode; generatedArea.style.display='flex'; nameBox.style.display='block'; showBubble('A ritual code has been prepared. You may save it or confirm to continue.', 'bot'); });
+  introRestoreBtn.addEventListener('click', ()=> { resetIntroUI(); restoreArea.style.display='flex'; });
 
-  introName.addEventListener('keydown', (e)=>{ if(e.key==='Enter') createGeneratedCode(); });
-  function createGeneratedCode(){ generatedCode = randCode(5); introCode.textContent = generatedCode; generatedArea.style.display='flex'; confirmCode.value=''; showBubble('A ritual code has been prepared. Save it if you wish to return.', 'bot'); }
   introCopyBtn.addEventListener('click', async ()=>{ if(!generatedCode) return; try{ await navigator.clipboard.writeText(generatedCode); showBubble('Code copied to clipboard.', 'bot'); }catch(e){ alert('Copy failed'); }});
   introSaveBtn.addEventListener('click', ()=>{ if(!generatedCode) return; const blob=new Blob([`Vampish access code: ${generatedCode}`], {type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`vampish-code-${generatedCode}.txt`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); showBubble('Saved code to file.', 'bot'); });
 
-  introConfirmBtn.addEventListener('click', ()=>{ const entered=(confirmCode.value||'').trim().toUpperCase(); if(!generatedCode) return alert('Generate a code first.'); if(entered !== generatedCode) return alert('Entered code does not match.'); const keep = !!introKeep.checked; const nm = (introName.value||'').trim() || 'NoName'; const expiry = keep ? in24hMs() : null; session = { code: generatedCode, name: nm, expiry }; if(keep) saveSessionLocal(session.code, session.name, session.expiry); openAppAfterLogin(session); });
+  introConfirmBtn.addEventListener('click', ()=>{ if(!generatedCode) return alert('No code generated. Click Log in first.'); const keep = !!introKeep.checked; const nm = (introName.value||'').trim() || 'NoName'; const expiry = keep ? in24hMs() : null; session = { code: generatedCode, name: nm, expiry }; if(keep) saveSessionLocal(session.code, session.name, session.expiry); openAppAfterLogin(session); });
 
-  restoreConfirmBtn.addEventListener('click', ()=>{ const val=(restoreInputIntro.value||'').trim().toUpperCase(); if(!/^[A-Z]{5}$/.test(val)) return alert('Enter 5 letters'); const saved = readSavedSession(); if(saved && saved.code === val){ session = saved; openAppAfterLogin(session); } else { const nm = prompt('No local session found for that code. Enter a display name to proceed:','NoName')||'NoName'; session = { code: val, name: nm, expiry: null }; openAppAfterLogin(session); }});
-  restoreCancelBtn.addEventListener('click', ()=> { restoreArea.style.display='none'; });
+  restoreConfirmBtn.addEventListener('click', ()=>{ const val=(restoreInputIntro.value||'').trim().toUpperCase(); if(!/^[A-Z]{5}$/.test(val)) return alert('Enter a 5-letter code'); const saved = readSavedSession(); if(saved && saved.code===val){ session = saved; openAppAfterLogin(session); } else { const nm = prompt('No local session found for that code. Enter a display name to proceed:','NoName')||'NoName'; session = { code: val, name: nm, expiry: null }; openAppAfterLogin(session); }});
+  restoreCancelBtn.addEventListener('click', ()=> restoreArea.style.display='none');
 
   welcomeStartBtn.addEventListener('click', ()=> { const s = readSavedSession(); if(s){ session = s; openAppAfterLogin(session); } else { welcomeArea.style.display='none'; }});
   welcomeLogoutBtn.addEventListener('click', ()=>{ clearSavedSession(); resetIntroUI(); showBubble('Local session cleared.', 'bot'); });
@@ -316,6 +301,8 @@ function resetIntroUI(){ nameBox.style.display='none'; generatedArea.style.displ
   saveDiskBtn.addEventListener('click', async ()=>{ if(!state.lastCert) return alert('No certificate.'); if(window.showSaveFilePicker){ try{ const opts={ suggestedName:`certificate-${(state.name||'NoName').replace(/\s+/g,'_')}.png`, types:[{description:'PNG', accept:{'image/png':['.png']}}] }; const h = await window.showSaveFilePicker(opts); const w = await h.createWritable(); const blob = dataURLtoBlob(state.lastCert.png); await w.write(blob); await w.close(); alert('Saved'); }catch(e){ console.warn(e); alert('Save cancelled'); } } else downloadDataUrl(state.lastCert.png, `certificate-${(state.name||'NoName').replace(/\s+/g,'_')}.png`); });
 
 })();
+
+function resetIntroUI(){ nameBox.style.display='none'; generatedArea.style.display='none'; restoreArea.style.display='none'; welcomeArea.style.display='none'; }
 
 function openAppAfterLogin(sess){
   session = sess;
@@ -342,7 +329,7 @@ function onRespond(){
   startQuestFlow();
 }
 
-// Quest flow (same as before)
+// Quest flow (same as previous implementation)
 const BASE_QUESTIONS = [
   { q: "You step into the moonlit courtyard. What draws your attention first?", a:[
     {t:'Aristocrat', text:'A grand chandelier and marble statues.'},
@@ -386,7 +373,7 @@ const LORE_QUESTIONS = [
     {t:'Aristocrat', text:'Refuse politely — rituals are for the desperate.'},
     {t:'Ancient', text:'Participate slowly; every ritual costs a memory.'},
   ]},
-  { q: "A symbol stands before you (a cross, a chalice, a broken crown). You:", a[
+  { q: "A symbol stands before you (a cross, a chalice, a broken crown). You:", a:[
     {t:'Nosferatu', text:'Use it as cover and step into shadow.'},
     {t:'Bloodseer', text:'Read its story for hidden omens.'},
     {t:'Aristocrat', text:'Wear it as an emblem and command attention.'},
@@ -422,14 +409,14 @@ function presentQuestion(){
   consoleChoices.innerHTML = '';
   if(state.qIndex >= activeQuestions.length) return concludeQuest();
   const q = activeQuestions[state.qIndex];
-  addConsolePrompt(q.q); // this text is cornflower
+  addConsolePrompt(q.q);
   showBubble(`Q${state.qIndex+1}: ${q.q}`, 'bot');
   const container = document.createElement('div'); container.style.display='flex'; container.style.flexDirection='column'; container.style.gap='8px';
   q.a.forEach(opt=>{
     const b = document.createElement('button'); b.className='btn'; b.textContent = opt.text;
     b.onclick = ()=> {
       Array.from(container.children).forEach(ch => ch.disabled = true);
-      showBubble(opt.text, 'me'); // user's answer will appear in cornflower
+      showBubble(opt.text, 'me');
       state.answers.push({ q: state.qIndex+1, type:opt.t, text:opt.text });
       state.scores[opt.t] = (state.scores[opt.t] || 0) + 1;
       state.qIndex++;
@@ -465,7 +452,7 @@ function concludeQuest(){
   showBubble(`The trial concludes. You are: ${info.title}`, 'bot');
 }
 
-// certificate (same)
+// certificate generation
 function generateCertificatePNG(name, typeTitle, typeDesc){
   ctx.clearRect(0,0,certCanvas.width,certCanvas.height);
   const g = ctx.createLinearGradient(0,0,certCanvas.width,certCanvas.height); g.addColorStop(0,'#120016'); g.addColorStop(1,'#3b0640');
